@@ -1,0 +1,130 @@
+{
+  "name": "Fluxo Facebook.",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "2c90b938-729d-463f-9aeb-5c6991941aff",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        3552,
+        -448
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v26.0/{{ $('Define Credentials meta').item.json['facebook-id'] }}/photos",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token"
+            },
+            {
+              "name": "caption"
+            },
+            {
+              "name": "url"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3744,
+        -448
+      ],
+      "id": "ae71f5cb-f786-4779-83e7-b111c786972b",
+      "name": "PostFacebook"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "Facebook postato",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3968,
+        -448
+      ],
+      "id": "3fdb07cc-3810-4431-bd50-1b1c12e0d362",
+      "name": "Send a text message",
+      "webhookId": "08861c48-04a2-499f-a5a5-e3dfa000c802",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4192,
+        -448
+      ],
+      "id": "2e87e32c-7ba9-4417-8153-08bdc0c0f295",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "PostFacebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostFacebook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e191614d-226b-4c71-b559-46727a578c5d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "AHIQqN3XnFMGhl7U",
+  "tags": []
+}

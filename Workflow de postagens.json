@@ -1,0 +1,2226 @@
+{
+  "name": "Workflow de postagens",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "43e132ae-16a4-4a1b-93fa-f5bcc1592a25",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        -528
+      ],
+      "id": "ef8f5ffd-708b-41f1-9ff3-10e8d39ef66a",
+      "name": "Webhook",
+      "webhookId": "43e132ae-16a4-4a1b-93fa-f5bcc1592a25"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -528
+      ],
+      "id": "47f436db-d09f-468b-bd29-7246260f1516",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -16,
+        -528
+      ],
+      "id": "a5f0855c-aa35-457c-83f5-de25ac936034",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        1232
+      ],
+      "id": "bef8e0f5-d179-419c-987d-c2b693b99161",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/files/Desenhos pendentes/**",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -16,
+        1136
+      ],
+      "id": "c7afa027-3763-48f4-b13b-653abe8d6b81",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "8828501727",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "=Temos esse arquivo para atualizar os dados \\n https://servidorlinux.tail670d0d.ts.net/form/ba7d33d0-f2fb-4473-a64f-30414cd926ca \\n Id: {{ $('Select rows from a table1').item.json.id }} \\n Nome do arquivo: {{ $('Select rows from a table1').item.json.nome_arquivo }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        672
+      ],
+      "id": "32d09d6f-08a1-44d5-8003-a885e4bed8ae",
+      "name": "Send a photo message",
+      "webhookId": "b540d581-b2c1-4a89-8f85-52ad0b3b5a21",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/files/Pendente/*{{ $json.nome_arquivo }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        592
+      ],
+      "id": "c0f9a8c8-88e8-4d4d-8de5-fa53e31f4b12",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82953070-7006-4a7d-8fb2-a18a5785d9d1",
+              "leftValue": "={{ $json.nome }}",
+              "rightValue": "=null",
+              "operator": {
+                "type": "boolean",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        688
+      ],
+      "id": "94b87175-a175-4346-aa76-f4cf3d6cf220",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        432,
+        720
+      ],
+      "id": "dc6663ea-775f-4e43-bb78-9e0957c3424e",
+      "name": "No Operation, do nothing3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        656,
+        400
+      ],
+      "id": "a5324314-b15f-4c6a-b5ec-90b3c1534355",
+      "name": "No Operation, do nothing4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 3,
+              "triggerAtHour": 13,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        688
+      ],
+      "id": "79d5f1ac-8f15-48f0-9826-1625df9ddf7f",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "nome",
+              "condition": "IS NULL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -16,
+        688
+      ],
+      "id": "27f41c41-9bba-4a6e-9201-15711d83c543",
+      "name": "Select rows from a table1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resize": {}
+      },
+      "type": "n8n-nodes-image-compress.compressImage",
+      "typeVersion": 1,
+      "position": [
+        880,
+        592
+      ],
+      "id": "53c36dc1-e7ab-4ff8-a243-4eaf8e8f7c04",
+      "name": "Compress Image1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        432,
+        528
+      ],
+      "id": "b1ffa322-3256-4a75-985c-11eb15cad060",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "formTitle": "Atualização de Registro de Desenho",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Id",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Nome para o desenho"
+            },
+            {
+              "fieldLabel": "Texto descritivo do desenho (hashtags incluidas)"
+            },
+            {
+              "fieldLabel": "Data de postagem",
+              "fieldType": "date",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        208,
+        912
+      ],
+      "id": "b60685dd-8c2e-46fc-a8f4-391b81dd8374",
+      "name": "On form submission",
+      "webhookId": "ba7d33d0-f2fb-4473-a64f-30414cd926ca"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "texto_gerado_em": "={{ $today }}",
+            "status": "Pendente",
+            "agendamento": "={{ $json['Data de postagem'] }}",
+            "texto": "={{ $json['Texto descritivo do desenho (hashtags incluidas)'] }}",
+            "nome": "={{ $json['Nome para o desenho'] }}",
+            "id": "={{ $json.Id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome_arquivo",
+              "displayName": "nome_arquivo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "agendamento",
+              "displayName": "agendamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "texto_gerado_em",
+              "displayName": "texto_gerado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tentativas",
+              "displayName": "tentativas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        432,
+        912
+      ],
+      "id": "97be3552-92ae-4bfc-adaa-c51d67acda07",
+      "name": "Update rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        208,
+        1328
+      ],
+      "id": "4a96d129-f0fc-4574-a02f-71bfb23f78bd",
+      "name": "Select rows from a table2",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        1328
+      ],
+      "id": "02658aa0-d420-4656-b2f0-f63d7810b017",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "nome_arquivo",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        432,
+        1232
+      ],
+      "id": "ba66865a-8add-4f1e-b8ed-fdab6b28ff5c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5ce6d609-8d85-4959-b7e4-67eedeecf36e",
+              "name": "nome_arquivo",
+              "value": "={{ $json.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        208,
+        1136
+      ],
+      "id": "31203dbb-8887-44df-9b80-11e76ce1b869",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7cdf2fc2-6049-435f-a5b4-d96d661e4664",
+              "leftValue": "={{ $json.nome_arquivo }}",
+              "rightValue": ".txt",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        1232
+      ],
+      "id": "ef2b7aaf-c3c9-42ca-b998-1c9eeccbb1c4",
+      "name": "If1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        1136
+      ],
+      "id": "79a8e95a-bfd2-4baf-a164-5a93cc1e4d11",
+      "name": "No Operation, do nothing5"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome_arquivo": "={{ $json.nome_arquivo }}",
+            "status": "Pendente"
+          },
+          "matchingColumns": [
+            "nome_arquivo"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome_arquivo",
+              "displayName": "nome_arquivo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "agendamento",
+              "displayName": "agendamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "texto_gerado_em",
+              "displayName": "texto_gerado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "tentativas",
+              "displayName": "tentativas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "plataformas_permitidas",
+              "displayName": "plataformas_permitidas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        880,
+        1328
+      ],
+      "id": "0daeec20-7992-4341-8249-801b3c465f79",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "iA6s6SF0f8V7Uz8O",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/iA6s6SF0f8V7Uz8O",
+          "cachedResultName": "Fallback dos gatos"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        656,
+        176
+      ],
+      "name": "Call Fallback",
+      "id": "b5c342fd-1aff-4ebe-a35b-7ffe51b49dd9"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/files/Fallback Gatos/**",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -16,
+        1552
+      ],
+      "id": "5fc65296-9054-42a1-8211-34542cb2223d",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        208,
+        1744
+      ],
+      "id": "1bae1a4e-41ed-40ce-8085-d3702bd3abfc",
+      "name": "Select rows from a table",
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        1744
+      ],
+      "id": "7d92d6e0-38c2-45d9-a1f1-b5dd042b52ca",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "nome_arquivo",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        432,
+        1648
+      ],
+      "id": "ffa8213e-cfbb-47c4-9aac-0f079b29d00d",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5ce6d609-8d85-4959-b7e4-67eedeecf36e",
+              "name": "nome_arquivo",
+              "value": "={{ $json.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        208,
+        1552
+      ],
+      "id": "fa2e35c8-3689-4197-8ccc-d5c977905e43",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7cdf2fc2-6049-435f-a5b4-d96d661e4664",
+              "leftValue": "={{ $json.nome_arquivo }}",
+              "rightValue": ".txt",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        1648
+      ],
+      "id": "b3ee186e-a551-4e4e-8c31-492b9e1f66ef",
+      "name": "If2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        1552
+      ],
+      "id": "3cdcea40-8bfc-471c-9a1b-d0ac2d7ab786",
+      "name": "No Operation, do nothing6"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nome_arquivo": "={{ $json.nome_arquivo }}",
+            "status": "Pendente",
+            "tipo": "gato"
+          },
+          "matchingColumns": [
+            "nome_arquivo"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome_arquivo",
+              "displayName": "nome_arquivo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "agendamento",
+              "displayName": "agendamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "texto_gerado_em",
+              "displayName": "texto_gerado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "tentativas",
+              "displayName": "tentativas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "plataformas_permitidas",
+              "displayName": "plataformas_permitidas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        880,
+        1744
+      ],
+      "id": "9a3aff95-1c29-4d44-9148-3446a8c5e43b",
+      "name": "Insert or update rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        1648
+      ],
+      "id": "fc783fbe-f749-430f-8a8a-9a1d6aa88d11",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        32
+      ],
+      "id": "9ad8846a-5965-4ae1-b702-ae11ba0cd992",
+      "name": "Schedule Trigger3"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "plataformas_permitidas",
+              "value": "Instagram"
+            },
+            {
+              "column": "status",
+              "value": "Processado"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -16,
+        32
+      ],
+      "id": "8912671d-1f5a-4288-9076-779f8b55b235",
+      "name": "Select rows from a table3",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega todos os itens que chegaram (30 itens)\nconst allItems = $input.all();\n\n// Se não houver itens, interrompe\nif (allItems.length === 0) {\n  return [];\n}\n\n// Cria um Map para armazenar os itens únicos, usando o número da linha como chave\nconst uniqueMap = new Map();\n\nallItems.forEach(item => {\n  const rowNumber = item.json._row_number; // campo adicionado pelo Get Rows\n  if (!uniqueMap.has(rowNumber)) {\n    uniqueMap.set(rowNumber, item);\n  }\n});\n\n// Converte o Map de volta para um array de itens\nconst uniqueItems = Array.from(uniqueMap.values());\n\n// Retorna os itens únicos (agora apenas 3)\nreturn uniqueItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        32
+      ],
+      "id": "08ff3308-2527-4e2b-b417-90850b000594",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "95d2c4f7-f821-4aff-9a53-5f7da7572be8",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        -208
+      ],
+      "id": "e831ec60-67e3-464d-ad08-d4f7d4779ffa",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/files/Desenhos pendentes/**",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        -32
+      ],
+      "id": "acd6f075-9ec7-4e6a-a930-5a1950a62087",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1904,
+        -32
+      ],
+      "id": "e8de07c6-822e-428d-b87a-f8b40de84e51",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "resize": {}
+      },
+      "type": "n8n-nodes-image-compress.compressImage",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -32
+      ],
+      "id": "830775ac-6a96-46cb-8f2f-868dca42c08a",
+      "name": "Compress Image"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -16
+      ],
+      "id": "54ebb41d-be41-4715-b64c-cec8fefedd7c",
+      "name": "No Operation, do nothing8"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "MZK9UZePWjViAbhY",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        2128,
+        -32
+      ],
+      "name": "Call Fluxo do instagram",
+      "id": "c3c67f7a-3784-4665-b449-43178d17753c"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "AHIQqN3XnFMGhl7U",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        2576,
+        -32
+      ],
+      "name": "Call Fluxo Facebook.",
+      "id": "e63bfa3f-56ee-432a-b9ad-d3b569bc904a"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        880,
+        -208
+      ],
+      "id": "7ba1d7c1-7570-46c1-9ae1-04ad17b54351",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1104,
+        -112
+      ],
+      "id": "74743ee1-f09a-4049-9a3d-ca1f75b1aa10",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "vZ6xX1tF51GFknQW",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        3024,
+        -32
+      ],
+      "name": "Call Fluxo Bsky",
+      "id": "2dbe6b71-30fc-4da6-9b1b-6f690d0da11d"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "rohXBeChJxuLIV85",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.4,
+      "position": [
+        3472,
+        -32
+      ],
+      "name": "Call Fluxo Telegram",
+      "id": "c5e76365-4bda-4dff-80dd-5bf23746a805"
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2352,
+        -32
+      ],
+      "id": "28467c2f-e1d4-4d3d-93b9-ebe89e7cbf1e",
+      "name": "Wait",
+      "webhookId": "3abd94e8-cda8-481a-84a5-aeba76d45c46"
+    },
+    {
+      "parameters": {
+        "amount": 25,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2800,
+        -32
+      ],
+      "id": "d4361810-e415-4f18-8137-8bbfda819d4d",
+      "name": "Wait1",
+      "webhookId": "c9c4f1db-e999-479f-b1f0-9a99e9652d1c"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3248,
+        -32
+      ],
+      "id": "2462b68d-a35f-48a4-951d-b46456868163",
+      "name": "Wait2",
+      "webhookId": "caa85968-a632-4ab3-9725-252582d3bb22"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        -304
+      ],
+      "id": "66b1b637-511c-4aa3-86e0-cd21ba8a3038",
+      "name": "No Operation, do nothing9"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        -224
+      ],
+      "id": "9dac67e2-c842-40b2-ba22-36bba9f884be",
+      "name": "Send a text message",
+      "webhookId": "1411925e-7650-4ff4-9634-fb23593e6e57"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1328,
+        -224
+      ],
+      "id": "a00afd67-a567-4a95-acf5-a3664567195a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1904,
+        -224
+      ],
+      "id": "4bcbc7f3-4702-43c5-81d5-39cb079e5a41",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        -224
+      ],
+      "id": "01988c2c-bb96-492c-a461-710a1f215771",
+      "name": "No Operation, do nothing7"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3696,
+        -16
+      ],
+      "id": "f30a9512-a9ab-471b-b539-25d1aca0bdbd",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0e1740ca-a872-4d13-ae83-1cc562a59bbf"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7813ea07-92e0-449b-bdc7-57f46875ae33",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d0d8196a-8ad4-4df2-9f4a-5fff5df4a7f4",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        16
+      ],
+      "id": "13d7eb92-4123-41b0-8703-61d985fc7b59",
+      "name": "Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Select rows from a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "Compress Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compress Image1": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert or update rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger3": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk3": {
+      "main": [
+        [
+          {
+            "node": "Compress Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Call Fluxo do instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compress Image": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Fluxo do instagram": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Fluxo Facebook.": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Fluxo Bsky": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Fluxo Telegram": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Call Fluxo Facebook.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Call Fluxo Bsky",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Call Fluxo Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "956f9273-124b-48d6-bec3-2571cbf12a72",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "FoqBhNnt18MCBIGL",
+  "tags": []
+}

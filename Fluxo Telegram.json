@@ -1,0 +1,127 @@
+{
+  "name": "Fluxo Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "sendMediaGroup",
+        "chatId": "-1004413885811",
+        "media": {
+          "media": [
+            {
+              "media": "data",
+              "additionalFields": {}
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2832,
+        -224
+      ],
+      "id": "d2bcf309-5b20-4a31-a778-83155397bcc9",
+      "name": "Send a media group message",
+      "webhookId": "4e622f6b-d16c-4983-80ac-12f2aae80aa0",
+      "credentials": {
+        "telegramApi": {
+          "id": "tbyHeA2pqM9HNrpC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "3823f3a7-681f-40e0-9ae5-d5440070e10f",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2400,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://files.catbox.moe/abc123.jpg",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2608,
+        -224
+      ],
+      "id": "b45b99d4-fa7c-4f9a-bf65-84301532a608",
+      "name": "Download Catbox"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3056,
+        -224
+      ],
+      "id": "b1f83b2b-fadf-40a2-a068-ea5adfc301f4",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Download Catbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Catbox": {
+      "main": [
+        [
+          {
+            "node": "Send a media group message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a media group message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9af22018-dc06-49e0-a2a1-6c5832ebe944",
+  "meta": {
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "rohXBeChJxuLIV85",
+  "tags": []
+}

@@ -1,0 +1,4662 @@
+{
+  "name": "Workflow das IAs",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "65ad38ec-3052-4373-991c-99e2b78a80a9",
+              "name": "message.chat.id",
+              "value": "={{ $json.message.from.id }}",
+              "type": "number"
+            },
+            {
+              "id": "be3a8b03-f712-448c-942d-de1026083ad9",
+              "name": "message.text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f70b4650-4533-4c8d-ba29-28a2c237554b",
+              "name": "=Nome",
+              "value": "={{ $json.message.chat.first_name }} {{ $json.message.from.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "2c73095c-f7e4-4e1b-9298-683df7f973da",
+              "name": "message.message_id",
+              "value": "={{ $json.message.message_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -2192,
+        112
+      ],
+      "id": "27dd2139-7ac8-44df-beaa-c359785f11e1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Pegar o texto completo da mensagem\nconst mensagem = $input.first().json.input || $input.first().json.text || $input.first().json.message?.text || '';\n\n// 2. Função auxiliar para extrair um campo específico\nfunction extrairCampo(texto, marcador) {\n  const regex = new RegExp(`${marcador}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n  const resultado = texto.match(regex);\n  return resultado ? resultado[1].trim() : '';\n}\n\n// --- DADOS DE DESENHO ---\nconst numeroProjeto = extrairCampo(mensagem, 'Numero_projeto');\nconst cliente = extrairCampo(mensagem, 'Cliente');\nconst ideia = extrairCampo(mensagem, 'Ideia');\nconst dataAdicao = extrairCampo(mensagem, 'Adição');\nconst dataInicio = extrairCampo(mensagem, 'Inicio');\nconst dataFim = extrairCampo(mensagem, 'Fim');\nconst tempo = extrairCampo(mensagem, 'Tempo');\nconst entrega = extrairCampo(mensagem, 'Entrega');\nconst ganho = extrairCampo(mensagem, 'Ganho');\nconst status = extrairCampo(mensagem, 'Status');\n\n// --- DADOS DE JOGO ---\nconst idJogo = extrairCampo(mensagem, 'id');\nconst zerado = extrairCampo(mensagem, 'zerado');\nconst dataZerada = extrairCampo(mensagem, 'data_zerada');\nconst nota = extrairCampo(mensagem, 'nota');\nconst review = extrairCampo(mensagem, 'review');\n\n// 3. Lógica de decisão: É desenho ou jogo?\n// Se tiver \"Numero_projeto\" ou \"Cliente\", é desenho.\nif (numeroProjeto || cliente) {\n  return {\n    json: {\n      tipo_requisicao: 'desenho', // 👈 Ajuda a rotear no n8n\n      Numero_Projeto: numeroProjeto,\n      Cliente: cliente,\n      Ideia: ideia,\n      Data_Adicao: dataAdicao,\n      Data_Inicio: dataInicio,\n      Data_Fim: dataFim,\n      Tempo: tempo,\n      Entrega: entrega,\n      Ganho: ganho,\n      status: status\n    }\n  };\n} \n// Se tiver \"idJogo\" e algum campo de review, é jogo.\nelse if (idJogo && (zerado || dataZerada || nota || review)) {\n  const jsonJogo = { \n    tipo_requisicao: 'jogo', // 👈 Ajuda a rotear no n8n\n    id: parseInt(idJogo)\n  };\n  \n  // Só adiciona os campos se você tiver digitado algo\n  if (zerado) jsonJogo.zerado = /sim|true|1/i.test(zerado);\n  if (dataZerada) jsonJogo.data_zerada = dataZerada;\n  if (nota) jsonJogo.nota = parseInt(nota);\n  if (review) jsonJogo.review = review;\n\n  return { json: jsonJogo };\n} \n// Se não for nenhum dos dois\nelse {\n  return {\n    json: {\n      tipo_requisicao: 'desconhecido',\n      erro: 'Não foi possível identificar se é desenho ou jogo.',\n      mensagem_original: mensagem\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        112
+      ],
+      "id": "cd889f08-eae5-4ad9-b6b8-f6ecccb73b2f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('insertMemoria').item.json.chat_id }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -272,
+        240
+      ],
+      "id": "7df81409-91a5-4f22-9916-95a66c4f0eca",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('insertMemoria').item.json.chat_id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        816
+      ],
+      "id": "ded2ae69-a610-49c0-8b0e-6ea4adaec972",
+      "name": "Send a text message",
+      "webhookId": "8edd7536-0494-4d4f-83af-6ee8c5531212",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "25467c58-8b4c-4405-a3c3-05a3ce4c806b",
+              "name": "Seu nome",
+              "value": "={{ $json['Seu nome'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8adb34a5-69cd-4f1e-90db-a6f6a3334e74",
+              "name": "Seus Pronomes",
+              "value": "={{ $json['Seus Pronomes'] }}",
+              "type": "string"
+            },
+            {
+              "id": "8bdff74a-af68-4fef-aaed-0ce484a80923",
+              "name": "Contato",
+              "value": "={{ $json.Contato }}",
+              "type": "string"
+            },
+            {
+              "id": "337035c8-7f2e-4065-8bc4-9c2498c9fd30",
+              "name": "Ideia",
+              "value": "={{ $json.Ideia }}",
+              "type": "string"
+            },
+            {
+              "id": "81d14889-7633-4cc9-8368-f0f6e39c48b6",
+              "name": "Produto",
+              "value": "={{ $json.Produto }}",
+              "type": "string"
+            },
+            {
+              "id": "034a21ff-e43d-49a4-bdda-e50e555cd5fa",
+              "name": "submittedAt",
+              "value": "={{ $json.submittedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "cf93a87f-8710-4f4c-b3a2-de96baee4be5",
+              "name": "Entrega",
+              "value": "={{ $json.Entrega }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -848,
+        1712
+      ],
+      "id": "9efe3c18-9ed6-472c-b610-b00dc182b2bc",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        1760
+      ],
+      "id": "796581af-1b53-493d-86ee-33272ee6c5c1",
+      "name": "Send a text message1",
+      "webhookId": "b6cdfb71-a3e6-4a66-88da-939d28ca5cdf",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        1104
+      ],
+      "id": "1d3f8b1c-e8c1-4e9a-8619-a8ceb8a74d58",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        240
+      ],
+      "id": "8039eb1f-372e-4ba4-aebc-2a5530e22978",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        240
+      ],
+      "id": "bc835cc4-f17e-41b3-af52-10669f8291e7",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        576,
+        1840
+      ],
+      "id": "d77e3204-e624-406d-958f-de7ff2b98a68",
+      "name": "Wikipedia1"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        704,
+        1840
+      ],
+      "id": "3373d648-9d5c-4cda-85aa-68eb03175dae",
+      "name": "Calculator1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('insertMemoria').item.json.input }}",
+        "options": {
+          "systemMessage": "Your name is Claw_dium.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou got 4 really specifics Postgress Tools that you need clear structions on the use:\nupsert_afazer - This ones add one task o the user, use when the user says \"eu tenho X tarefa pra dia Y\"; or something alike, when the priority isn't mentione use \"media\", when the category isn't mentioned use \"pessoal\".\nlist_afazer - list the all the pending tasks, use when user asks for \"eu tenho alguma coisa pra fazer hoje? Essa semana tem alguma coisa importante\" and alike, by default search for tasks that are 2 days foward.\n\nYou have acces to wikipedia tool, when the wikipedia tool fails or gave poor results use the DuckDuckGo tool.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will deal with the following Postgres Sheets:\nTransacoes:\nThis table contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just give a weakly resume of the user activity.\nJogos:\nThis table is related to games and games libraries, when dealing with this table remenber the user of her game adiction problem and how she can play one of the games on their vast library insted of buying more, give her suggestions of games to play, also, the Meta collum is a set of goal of her to fulfill in her gamer life like beating at least one third of her whole library, and the Zerada collum is a list of her beated games with a short review of then.\nDesenho:\nThis is a table containing the users drawing projects, some of those are commissions and some others are just personal work.\nExercicios:\nThis table contains a daily routine of exercices that the user should do daily, give her advices and motivation for doing then.\nCartas:\nThis contains a lists of all the collection of Trading Card Games the user have.\nMusicas:\nThis contains a lists and playlist the user have build with her collection of music.\nLivros:\nThis contains a list of all the books the user have on her collection, give her suggestions on what to read daily.\nLinks:\nA set of useful links the user needs sometimes.\nMemoria:\nThis is the user and your memory, when asked check the entire table, and regularly check the last 5 itens in the table and search in this table if we already talked about specifics subjects.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n\n\n\nYour name is Claw_two.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will recease a formulary that contains the following elements:\nCliente (the clients name)\nPronomes (the clients pronuns)\nContato (the clientes contact information)\nIdeia (a description of the clientes project)\nProduto (the type of project)\nLançamento (the moment the client submited the formulary)\nEntrega (the due date of the clientes project)\n\nReview the clients projects based on the desenho table available by Postgres.\nReview the viability based on how much time it usually takes per project.\nReview the earnings based on how much time i will take to complete the project.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n\nYour name is Claw_treee.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\n\nYou will recease a formulary based data in that order:\nTipo de gasto(what the user did with her money)\nGasto(the amount she expended)\nGanho(the amount she earned if any)\nServiço(what did she paid for)\nBanco(The bank account she used)\nsubmittedAt(when the form where submited)\n\nAnd you will deal with the following Sheets:\nPainel:\nThis sheet contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just say a weakly resume the user activity.\nBalanço:\nWhen dealing with this sheet give the user financial advices on how she could mantaing her Money and make good investments and good financial choices.\n\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n\nYour name is Claw_d4.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will recease a formulary based data in that order:\nTipo de gasto(what the user did with her money)\nGasto(the amount she expended)\nGanho(the amount she earned if any)\nServiço(what did she paid for)\nBanco(The bank account she used)\nsubmittedAt(when the form where submited)\nSpecificaly about games\nNome do jogo(name of the game)\nPlataforma(the digital plataform where the game was brought)\nPreço Cheio(the full price of said game)\nData da compra(date when the game was brought)\nEu queria(if the user wanted the game)\nMultiplas versões(if the user already got the said game on other platform)\nLançamento(when the game was released)\n\nYou will deal with the following Tables:\ntransacoes:\nThis table contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just say a weakly resume the user activity.\nJogos:\nThis table is related to games and games libraries, when dealing with this table remenber the user of her game adiction problem and how she can play one of the games on their vast library insted of buying more, give her suggestions of games to play, also, the Meta collum is a set of goal of her to fulfill in her gamer life like beating at least one third of her whole library, and the Zerada collum is a list of her beated games with a short review of then.\n\nEach table got it's own context and purpose, you need to read and pass the information to the user when asked and insert the information in the table when asked both in transacoes and jogos.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n\n\nYour name is Claw_cinco.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will recease a formulary based data in that order:\nTipo de gasto(what the user did with her money)\nGasto(the amount she expended)\nGanho(the amount she earned if any)\nServiço(what did she paid for)\nBanco(The bank account she used)\nsubmittedAt(when the form where submited)\n\nAnd you will deal with the following Sheets:\nPainel:\nThis sheet contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just say a weakly resume the user activity if you can extract any.\nBalanço:\nWhen dealing with this sheet give the user financial advices on how she could mantaing her Money and make good investments and good financial choices.\nDesenho:\nThis is a sheet containing the users drawing projects, some of those are commissions and some others are just personal work, when dealing with this sheet just check the DESENHO google sheet and check if the user wants to update it or already have updated it.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        0
+      ],
+      "id": "f1e94a6e-18f2-41e2-97aa-75ed3af5cd58",
+      "name": "Claw_Dium",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.input }}",
+        "options": {
+          "systemMessage": "Your name is Claw_two.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will recease a formulary that contains the following elements:\nCliente (the clients name)\nPronomes (the clients pronuns)\nContato (the clientes contact information)\nIdeia (a description of the clientes project)\nProduto (the type of project)\nLançamento (the moment the client submited the formulary)\nEntrega (the due date of the clientes project)\n\nReview the clients projects based on the desenho table available by Postgres.\nReview the viability based on how much time it usually takes per project.\nReview the earnings based on how much time i will take to complete the project.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        1600
+      ],
+      "id": "d46a6410-1789-493f-8d0c-54b279ea47cd",
+      "name": "Claw_Two",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Games",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d968af18-e0aa-4b2f-9eeb-6e994ccdf78a"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Games"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "dd016e86-cb0a-40bf-9d8d-9407795ac2e5",
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Restaurante",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Painel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7fdfb69a-b87d-4cf0-a691-3a6132958723",
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Mercado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "92b12f54-994f-4380-af0f-8a8e2de076ba",
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Contas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8671b37f-01f5-48e0-ab12-feffe1164976",
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Lazer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "db6cc87d-dbbc-44d2-9890-9c92f67bff13",
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Farmacia",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a515b719-46f2-43d6-b2f0-8ae57c3fb0c4",
+                    "leftValue": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+                    "rightValue": "Desenho",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Desenho"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1296,
+        688
+      ],
+      "id": "fcd1669f-4a69-4e72-91ba-0065e15c7110",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "formTitle": "Pedido de Desenho",
+        "formDescription": "Não precisa de muitos detalhes, eu vou te contatar cedo ou tarde",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Seu nome",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Seus Pronomes"
+            },
+            {
+              "fieldLabel": "Contato",
+              "placeholder": "Seu melhor contato",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ideia",
+              "placeholder": "Uma breve descrição",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Produto",
+              "fieldType": "dropdown",
+              "defaultValue": "Ilustração",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Ilustração"
+                  },
+                  {
+                    "option": "Ych"
+                  },
+                  {
+                    "option": "Character Sheet"
+                  },
+                  {
+                    "option": "NSFW"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Entrega",
+              "fieldType": "date",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1072,
+        1712
+      ],
+      "id": "314c00ea-578c-4fd7-911d-f41f7997495e",
+      "name": "FormularioDrawingRequest",
+      "webhookId": "2a182da5-1098-4401-a415-0bf70842bebf"
+    },
+    {
+      "parameters": {
+        "formTitle": "Formulario de gastos.",
+        "formDescription": "Cuidado com os seus gastos.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Tipo de gasto",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Lazer"
+                  },
+                  {
+                    "option": "Restaurante"
+                  },
+                  {
+                    "option": "Contas"
+                  },
+                  {
+                    "option": "Mercado"
+                  },
+                  {
+                    "option": "Games"
+                  },
+                  {
+                    "option": "Farmacia"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Gasto",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Ganho",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Serviço.",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Banco",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Picpay"
+                  },
+                  {
+                    "option": "Nubank"
+                  },
+                  {
+                    "option": "Mercado pago"
+                  },
+                  {
+                    "option": "Inter"
+                  },
+                  {
+                    "option": "Itau"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1744,
+        768
+      ],
+      "id": "f4b9f276-810a-4505-a582-3b9c6ee6900f",
+      "name": "FormularioGastos",
+      "webhookId": "d341550f-2fea-48b1-8c74-8bb1244518e4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }} {{ $('FormularioGastos').item.json.Gasto }} {{ $('FormularioGastos').item.json.Ganho }} {{ $('FormularioGastos').item.json['Serviço.'] }} {{ $('FormularioGastos').item.json.Banco }} {{ $('FormularioGastos').item.json.submittedAt }} \n{{ $json['Nome do jogo'] }}\n{{ $json.Plataforma }}\n{{ $json['Preço cheio'] }}\n{{ $json['Data da compra'] }}\n{{ $json['Eu queria'] }}\n{{ $json['Multilas versões'] }}\n{{ $json['Lançamento'] }}",
+        "options": {
+          "systemMessage": "Your name is Claw_d4.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will recease a formulary based data in that order:\nTipo de gasto(what the user did with her money)\nGasto(the amount she expended)\nGanho(the amount she earned if any)\nServiço(what did she paid for)\nBanco(The bank account she used)\nsubmittedAt(when the form where submited)\nSpecificaly about games\nNome do jogo(name of the game)\nPlataforma(the digital plataform where the game was brought)\nPreço Cheio(the full price of said game)\nData da compra(date when the game was brought)\nEu queria(if the user wanted the game)\nMultiplas versões(if the user already got the said game on other platform)\nLançamento(when the game was released)\n\nYou will deal with the following Tables:\ntransacoes:\nThis table contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just say a weakly resume the user activity.\nJogos:\nThis table is related to games and games libraries, when dealing with this table remenber the user of her game adiction problem and how she can play one of the games on their vast library insted of buying more, give her suggestions of games to play, also, the Meta collum is a set of goal of her to fulfill in her gamer life like beating at least one third of her whole library, and the Zerada collum is a list of her beated games with a short review of then.\n\nEach table got it's own context and purpose, you need to read and pass the information to the user when asked and insert the information in the table when asked both in transacoes and jogos.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        800
+      ],
+      "id": "1cfde113-9713-48d1-8599-f6bf4c3065c3",
+      "name": "Claw_d4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('FormularioGastos') .item }}",
+        "options": {
+          "systemMessage": "Your name is Claw_treee.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\n\nYou will recease a formulary based data in that order:\nTipo de gasto(what the user did with her money)\nGasto(the amount she expended)\nGanho(the amount she earned if any)\nServiço(what did she paid for)\nBanco(The bank account she used)\nsubmittedAt(when the form where submited)\n\nAnd you will deal with the following Sheets:\nPainel:\nThis sheet contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just say a weakly resume the user activity.\nBalanço:\nWhen dealing with this sheet give the user financial advices on how she could mantaing her Money and make good investments and good financial choices.\n\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        400
+      ],
+      "id": "be714bf6-3612-4e5d-bbf1-befa5a289e71",
+      "name": "Claw_treee",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }} {{ $('FormularioGastos').item.json.Gasto }} {{ $('FormularioGastos').item.json.Ganho }} {{ $('FormularioGastos').item.json['Serviço.'] }} {{ $('FormularioGastos').item.json.Banco }} {{ $('FormularioGastos').item.json.submittedAt }}",
+        "options": {
+          "systemMessage": "Your name is Claw_cinco.\nYou are a brave, direct, evil, dirty mouth, comically rude and short tempered assistant that answers in the Brazilian Portuguese for a Brazilian Trans Girl.\nNEVER BE TRANSPHOBIC.\n\nYou have a limit of 1000 characters per message.\n\nYou will deal with Postgres tables, when doing that never use:\nSELECT * \"tables name\"\nUse freely:\nWHERE\nLIMIT 10\nSUM or COUNT\n\nYou will recease a formulary based data in that order:\nTipo de gasto(what the user did with her money)\nGasto(the amount she expended)\nGanho(the amount she earned if any)\nServiço(what did she paid for)\nBanco(The bank account she used)\nsubmittedAt(when the form where submited)\n\nAnd you will deal with the following Sheets:\nPainel:\nThis sheet contains the expences and earnings of the user and the reason why she used or gained money, when dealing with it just say a weakly resume the user activity if you can extract any.\nBalanço:\nWhen dealing with this sheet give the user financial advices on how she could mantaing her Money and make good investments and good financial choices.\nDesenho:\nThis is a sheet containing the users drawing projects, some of those are commissions and some others are just personal work, when dealing with this sheet just check the DESENHO google sheet and check if the user wants to update it or already have updated it.\n\nIMPORTANT: Your reply is sent to Telegram as plain text. Do NOT use any Markdown or HTML formatting. Do not use asterisks (*), underscores (_), backticks (`), pound signs (#) or Markdown tables (pipes |). When you need to show tabular data, format it as simple aligned lines or a plain list with dashes and line breaks. Avoid any characters that could be interpreted as formatting entities.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        1200
+      ],
+      "id": "5634e251-407f-4396-ba52-5f256a432135",
+      "name": "Claw_cinco",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        1056
+      ],
+      "id": "c90acf81-217a-49ba-9d3c-83758c17f4c1",
+      "name": "Send a text message2",
+      "webhookId": "b6cdfb71-a3e6-4a66-88da-939d28ca5cdf",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-pro",
+        "options": {}
+      },
+      "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        240
+      ],
+      "id": "388b9e48-c993-4916-bcff-91e4482120b1",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepseekApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-pro",
+        "options": {}
+      },
+      "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1840
+      ],
+      "id": "47528e8e-05bb-4a94-87af-6c049e9707aa",
+      "name": "DeepSeek Chat Model5",
+      "credentials": {
+        "deepseekApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-pro",
+        "options": {}
+      },
+      "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        384,
+        1040
+      ],
+      "id": "621a54a5-90bb-4aaa-bbcd-67c5c38839d0",
+      "name": "DeepSeek Chat Model6",
+      "credentials": {
+        "deepseekApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-pro",
+        "options": {}
+      },
+      "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        384,
+        640
+      ],
+      "id": "f758330e-a59b-4c7b-8dc9-87478bae1943",
+      "name": "DeepSeek Chat Model7",
+      "credentials": {
+        "deepseekApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-pro",
+        "options": {}
+      },
+      "type": "n8n-nodes-deepseek-chat-model.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1440
+      ],
+      "id": "6d54e734-e028-4a2e-9ead-8e38de91c045",
+      "name": "DeepSeek Chat Model8",
+      "credentials": {
+        "deepseekApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "atividade": "Pedido de Desenho",
+            "input": "={{ $json['Seu nome'] }} {{ $json['Seus Pronomes'] }} {{ $json.Contato }} {{ $json.Ideia }} {{ $json.Produto }} {{ $json.submittedAt }} {{ $json.Entrega }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -624,
+        1712
+      ],
+      "id": "71bfdd82-4a12-4835-ab9c-fcb75eb28f10",
+      "name": "Insert rows in a table2",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Insert rows in a table2').item.json.id }}",
+            "output": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1728,
+        1760
+      ],
+      "id": "ae63692b-6452-4257-aa26-1baac9e0313f",
+      "name": "Insert or update rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "atividade": "Formulario de Gastos",
+            "input": "={{ $json['Tipo de gasto'] }} {{ $json.Gasto }} {{ $json.Ganho }} {{ $json['Serviço.'] }} {{ $json.Banco }} {{ $json.submittedAt }} {{ $json.formMode }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1520,
+        768
+      ],
+      "id": "83d29a64-a034-478b-90ac-1448f6286966",
+      "name": "Insert rows in a table1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Insert rows in a table1').item.json.id }}",
+            "output": "={{ $json.output }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1728,
+        1056
+      ],
+      "id": "e830d979-fcd9-4eb9-8b14-b74a13247b02",
+      "name": "Insert or update rows in a table2",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "desenho",
+          "mode": "list",
+          "cachedResultName": "desenho"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        576,
+        1440
+      ],
+      "id": "478a77b6-d810-4002-b374-2e317d68a128",
+      "name": "Select rows from a table in Postgres7",
+      "credentials": {
+        "postgres": {
+         "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        704,
+        1440
+      ],
+      "id": "6f182529-91f7-466f-81ef-ee3714133310",
+      "name": "Select rows from a table in Postgres8",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "servico": "={{ $('FormularioGastos').item.json['Serviço.'] }}",
+            "gasto": "={{ $('FormularioGastos').item.json.Gasto }}",
+            "ganho": "={{ $('FormularioGastos').item.json.Ganho }}",
+            "banco": "={{ $('FormularioGastos').item.json.Banco }}",
+            "tipo": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "servico",
+              "displayName": "servico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "banco",
+              "displayName": "banco",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gasto",
+              "displayName": "gasto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ganho",
+              "displayName": "ganho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "proposito",
+              "displayName": "proposito",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        832,
+        1440
+      ],
+      "id": "42b85274-905f-4973-8da7-dcb9bbf257da",
+      "name": "Insert rows in a table in Postgres5",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "links",
+          "mode": "list",
+          "cachedResultName": "links"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        128,
+        240
+      ],
+      "id": "5b3b04b2-0436-431f-8885-482cd8b6e288",
+      "name": "Links",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "desenho",
+          "mode": "list",
+          "cachedResultName": "desenho"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "numero_projeto": "={{ $json.Numero_Projeto }}",
+            "cliente": "={{ $json.Cliente }}",
+            "ideia": "={{ $json.Ideia }}",
+            "data_adicao": "={{ $json.Data_Adicao }}",
+            "entrega": "={{ $json.Entrega }}",
+            "ganho": "={{ $json.Ganho }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "numero_projeto",
+              "displayName": "numero_projeto",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ideia",
+              "displayName": "ideia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_adicao",
+              "displayName": "data_adicao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tempo_gasto",
+              "displayName": "tempo_gasto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "entrega",
+              "displayName": "entrega",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ganho",
+              "displayName": "ganho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        256,
+        240
+      ],
+      "id": "0b3f29de-3aff-4398-b21f-044b11392fd4",
+      "name": "addDesenho",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "desenho",
+          "mode": "list",
+          "cachedResultName": "desenho"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        384,
+        240
+      ],
+      "id": "bae26d7b-d427-4b98-bc60-af6dec360b49",
+      "name": "showDesenho",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        512,
+        240
+      ],
+      "id": "7c1e456b-9324-4842-910c-08022a7a6d4a",
+      "name": "showTransacoes",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "jogos",
+          "mode": "list",
+          "cachedResultName": "jogos"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        640,
+        240
+      ],
+      "id": "980dc800-e20d-489a-b014-417ce4688b20",
+      "name": "showJogos",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        768,
+        240
+      ],
+      "id": "ea801405-9670-4d00-ab4e-b38bbf014d29",
+      "name": "showMemoria",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "output": "={{ $json.output }}",
+            "input": "={{ $('insertMemoria').item.json.input }}",
+            "atividade": "={{ $('insertMemoria').item.json.atividade }}",
+            "chat_id": "={{ $('insertMemoria').item.json.chat_id }}",
+            "id": "={{ $('insertMemoria').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1728,
+        816
+      ],
+      "id": "a780c41b-33c2-4e66-8cb4-daaf99a135f7",
+      "name": "updateMemoria",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ $('Insert rows in a table3').item.json.chat_id }}",
+            "input": "={{ $json.texto_agrupado }}",
+            "atividade": "Telegram"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -848,
+        112
+      ],
+      "id": "60e12c31-b1f9-4d78-8e31-def9a2859382",
+      "name": "insertMemoria",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "desenho",
+          "mode": "list",
+          "cachedResultName": "desenho"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "numero_projeto": "={{ $json.Numero_Projeto }}",
+            "data_inicio": "={{ $json.Data_Inicio }}",
+            "data_fim": "={{ $json.Data_Fim }}",
+            "tempo_gasto": "={{ $json.Tempo }}",
+            "status": "={{ $json.status }}"
+          },
+          "matchingColumns": [
+            "numero_projeto"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "numero_projeto",
+              "displayName": "numero_projeto",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ideia",
+              "displayName": "ideia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_adicao",
+              "displayName": "data_adicao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_inicio",
+              "displayName": "data_inicio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_fim",
+              "displayName": "data_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tempo_gasto",
+              "displayName": "tempo_gasto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "entrega",
+              "displayName": "entrega",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ganho",
+              "displayName": "ganho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        896,
+        240
+      ],
+      "id": "0e304044-a351-4066-87d9-d8c301061ac2",
+      "name": "updateDesenho",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "desenho",
+          "mode": "list",
+          "cachedResultName": "desenho"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        832,
+        1840
+      ],
+      "id": "9793775b-ef6c-4ad6-816d-18d84be00bba",
+      "name": "showDesenho 1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nome do jogo",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Plataforma",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Steam"
+                  },
+                  {
+                    "option": "Epic"
+                  },
+                  {
+                    "option": "Gog"
+                  },
+                  {
+                    "option": "Fisico"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Preço cheio",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Data da compra",
+              "fieldType": "date",
+              "defaultValue": "={{ $today }}"
+            },
+            {
+              "fieldLabel": "Eu queria",
+              "fieldType": "checkbox",
+              "defaultValue": "não",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Sim"
+                  },
+                  {
+                    "option": "não"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Multilas versões",
+              "fieldType": "checkbox",
+              "defaultValue": "não",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Sim"
+                  },
+                  {
+                    "option": "não"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Lançamento",
+              "fieldType": "date"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        -848,
+        912
+      ],
+      "id": "961045a9-ea95-411e-a51e-6471f107f4aa",
+      "name": "Form",
+      "webhookId": "f34f547a-f5f4-4235-9ead-712df7ea1754"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        640,
+        1040
+      ],
+      "id": "d8441c1f-ea6a-4b8d-b1c6-6eb73b566b45",
+      "name": "showTransacoes 1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "jogos",
+          "mode": "list",
+          "cachedResultName": "jogos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "eu_queria": "={{ $json.eu_queria }}",
+            "tem_multiplas_versoes": "={{ $json.multiplas_versoes }}",
+            "nome": "={{ $json['Nome do jogo'] }}",
+            "plataforma": "={{ $json.Plataforma }}",
+            "preco_cheio": "={{ $json['Preço cheio'] }}",
+            "preco_pago": "={{ $('FormularioGastos').item.json.Gasto }}",
+            "data_compra": "={{ $json['Data da compra'] }}",
+            "lancamento": "={{ $json['Lançamento'] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "plataforma",
+              "displayName": "plataforma",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "preco_cheio",
+              "displayName": "preco_cheio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "preco_pago",
+              "displayName": "preco_pago",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "lancamento",
+              "displayName": "lancamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_compra",
+              "displayName": "data_compra",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "eu_queria",
+              "displayName": "eu_queria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "zerado",
+              "displayName": "zerado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_zerada",
+              "displayName": "data_zerada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nota",
+              "displayName": "nota",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "review",
+              "displayName": "review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tem_multiplas_versoes",
+              "displayName": "tem_multiplas_versoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        768,
+        1040
+      ],
+      "id": "cb27309a-7396-474c-9474-9e7b4c68ebc2",
+      "name": "insertJogos",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      },
+      "notes": "INSERT INTO app.jogos (nome, plataforma, zerado, eu_queria)\nVALUES (\n    $1,\n    $2,\n    -- Converte pra boolean, tratando null e string vazia\n    COALESCE(NULLIF($3, '')::BOOLEAN, FALSE),\n    COALESCE(NULLIF($4, '')::BOOLEAN, FALSE)\n)\nRETURNING id, nome, zerado;"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const json = item.json;\n  \n  // Função que converte qualquer coisa em boolean seguro\n  function paraBool(valor) {\n    // Se já é boolean de verdade, retorna\n    if (typeof valor === 'boolean') return valor;\n    \n    // Se é null, undefined ou string vazia, retorna false\n    if (valor === null || valor === undefined || valor === '') return false;\n    \n    // Se é array (n8n às vezes manda checkbox assim), pega o primeiro\n    if (Array.isArray(valor)) valor = valor[0];\n    \n    // Se é string, converte\n    if (typeof valor === 'string') {\n      const normalizado = valor.toLowerCase().trim();\n      return normalizado === 'true' \n          || normalizado === 't' \n          || normalizado === '1' \n          || normalizado === 'yes'\n          || normalizado === 'sim';\n    }\n    \n    // Se é número\n    if (typeof valor === 'number') return valor !== 0;\n    \n    // Fallback\n    return false;\n  }\n  \n  // Cria uma cópia do json com os campos convertidos\n  return {\n    json: {\n      ...json,\n      // Adapta os nomes dos campos pros que vão pro Postgres\n      // Troca \"zerado\" e \"eu_queria\" pelos nomes reais do seu form\n      zerado: paraBool(json.zerado),\n      eu_queria: paraBool(json.eu_queria),\n      multiplas_versoes: paraBool(json.multiplas_versoes),\n      \n      // Mantém os outros campos intactos\n      nome: json.nome,\n      plataforma: json.plataforma,\n      preco_pago: json.preco_pago,\n      preco_cheio: json.preco_cheio,\n      lancamento: json.lancamento,\n      data_compra: json.data_compra,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        912
+      ],
+      "id": "a86a55b1-99be-4465-abb5-afe8bdc89ccf",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "servico": "={{ $('FormularioGastos').item.json['Serviço.'] }}",
+            "gasto": "={{ $('FormularioGastos').item.json.Gasto }}",
+            "ganho": "={{ $('FormularioGastos').item.json.Ganho }}",
+            "banco": "={{ $('FormularioGastos').item.json.Banco }}",
+            "tipo": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "servico",
+              "displayName": "servico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "banco",
+              "displayName": "banco",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gasto",
+              "displayName": "gasto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ganho",
+              "displayName": "ganho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "proposito",
+              "displayName": "proposito",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        640,
+        640
+      ],
+      "id": "ab4b6f09-7868-43b5-8fb6-e5a8d36f7650",
+      "name": "insertTransacoess 2",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        768,
+        640
+      ],
+      "id": "9ff2d258-dcb0-424d-8200-87fe3db515d0",
+      "name": "showTransacoes1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "transacoes",
+          "mode": "list",
+          "cachedResultName": "transacoes"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data": "={{ $('FormularioGastos').item.json.submittedAt }}",
+            "tipo": "={{ $('FormularioGastos').item.json['Tipo de gasto'] }}",
+            "servico": "={{ $('FormularioGastos').item.json['Serviço.'] }}",
+            "banco": "={{ $('FormularioGastos').item.json.Banco }}",
+            "gasto": "={{ $('FormularioGastos').item.json.Gasto }}",
+            "ganho": "={{ $('FormularioGastos').item.json.Ganho }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo",
+              "displayName": "tipo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "servico",
+              "displayName": "servico",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "banco",
+              "displayName": "banco",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gasto",
+              "displayName": "gasto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ganho",
+              "displayName": "ganho",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "proposito",
+              "displayName": "proposito",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1072,
+        912
+      ],
+      "id": "720445dc-b019-417e-8536-666aeb122fe9",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        -2416,
+        112
+      ],
+      "id": "ce5a03da-22c5-4011-bf89-7b5184a2ac64",
+      "name": "Telegram Trigger1",
+      "webhookId": "2a989b41-f3af-41bc-b872-9119788aeed6",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('FormularioGastos').item.json['Serviço.'] }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        1040
+      ],
+      "id": "14f500f0-b595-45e3-aa59-fd1670ff01fd",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('FormularioGastos').item.json['Serviço.'] }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        1440
+      ],
+      "id": "b9139345-9c28-4c51-85c5-13365be57b0b",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('FormularioGastos').item.json['Serviço.'] }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        512,
+        640
+      ],
+      "id": "371490d6-20c2-433e-9de7-abe04e0eae20",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('FormularioDrawingRequest').item.json.Contato }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        448,
+        1840
+      ],
+      "id": "32f6fe0c-eca3-4e0b-ad78-a5e4ab60afda",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "jogos",
+          "mode": "list",
+          "cachedResultName": "jogos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "zerado": "={{ $json.zerado }}",
+            "id": "={{ $json.id }}",
+            "nota": "={{ $json.nota }}",
+            "data_zerada": "={{ $json.data_zerada }}",
+            "review": "={{ $json.review }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "plataforma",
+              "displayName": "plataforma",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "preco_cheio",
+              "displayName": "preco_cheio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "preco_pago",
+              "displayName": "preco_pago",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "lancamento",
+              "displayName": "lancamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_compra",
+              "displayName": "data_compra",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "eu_queria",
+              "displayName": "eu_queria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "zerado",
+              "displayName": "zerado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_zerada",
+              "displayName": "data_zerada",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nota",
+              "displayName": "nota",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review",
+              "displayName": "review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tem_multiplas_versoes",
+              "displayName": "tem_multiplas_versoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        1024,
+        240
+      ],
+      "id": "2a4fda83-f971-4a65-976e-90242106b1f2",
+      "name": "Update Jogos",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query', ``, 'string') }}",
+        "webSearchOptions": {
+          "maxResults": 5,
+          "region": "wt-wt",
+          "safeSearch": -2,
+          "fetchPageContent": true
+        },
+        "cacheSettings": {
+          "enableCache": true,
+          "cacheTTL": 300
+        }
+      },
+      "type": "n8n-nodes-duckduckgo-search.duckDuckGoTool",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        240
+      ],
+      "id": "a993bdd6-c538-4441-b967-4e5ac7ae7ca2",
+      "name": "DuckDuckGo"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "afazeres",
+          "mode": "list",
+          "cachedResultName": "afazeres"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        1280,
+        240
+      ],
+      "id": "0008aa8a-6de6-42a3-b2f3-a58e88c5b239",
+      "name": "list_afazer",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -624,
+        2000
+      ],
+      "id": "84ca2d4f-99a4-47ed-9500-64e11f7ab014",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    CASE \n        WHEN data < CURRENT_DATE THEN 'atrasado'\n        WHEN data = CURRENT_DATE THEN 'hoje'\n        WHEN data = CURRENT_DATE + 1 THEN 'amanha'\n        WHEN data = CURRENT_DATE + 2 THEN 'depois'\n    END AS grupo,\n    id, titulo, descricao, data, hora, prioridade, categoria\nFROM app.afazeres\nWHERE status = 'pendente'\n  AND data <= CURRENT_DATE + INTERVAL '2 days'\nORDER BY data, hora NULLS LAST, prioridade DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        560,
+        2000
+      ],
+      "id": "678fd269-7323-4706-9e62-d9a24b248310",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nif (items.length === 0) {\n  return [{ json: { mensagem: '☀️ Bom dia! Nada nos próximos 2 dias. Dia livre.' } }];\n}\n\nconst grupos = { atrasado: [], hoje: [], amanha: [], depois: [] };\nitems.forEach(i => grupos[i.json.grupo]?.push(i.json));\n\nconst emojiPrio = { alta: '🔴', media: '🟡', baixa: '🟢' };\n\nfunction formatar(lista) {\n  return lista.map(a => {\n    const h = a.hora ? ` ${a.hora.slice(0,5)}` : '';\n    const e = emojiPrio[a.prioridade] || '⚪';\n    let linha = `${e} <b>${a.titulo}</b>${h}`;\n    if (a.descricao) linha += `\\n   <i>${a.descricao}</i>`;\n    return linha;\n  }).join('\\n');\n}\n\nconst linhas = ['☀️ <b>Bom dia! Sua agenda:</b>', ''];\n\nif (grupos.atrasado.length) {\n  linhas.push(`🚨 <b>ATRASADO (${grupos.atrasado.length})</b>`);\n  linhas.push(formatar(grupos.atrasado));\n  linhas.push('');\n}\nif (grupos.hoje.length) {\n  linhas.push(`📌 <b>HOJE (${grupos.hoje.length})</b>`);\n  linhas.push(formatar(grupos.hoje));\n  linhas.push('');\n}\nif (grupos.amanha.length) {\n  linhas.push(`📅 <b>AMANHÃ (${grupos.amanha.length})</b>`);\n  linhas.push(formatar(grupos.amanha));\n  linhas.push('');\n}\nif (grupos.depois.length) {\n  linhas.push(`🔔 <b>EM 2 DIAS (${grupos.depois.length})</b>`);\n  linhas.push(formatar(grupos.depois));\n}\n\nreturn [{ json: { mensagem: linhas.join('\\n').trim() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        2000
+      ],
+      "id": "5022c154-5429-4c8c-b88e-19ff0ebccee4",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "={{ $json.mensagem }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        2000
+      ],
+      "id": "44a7e2a8-184f-4d53-98db-0cc47fa17c45",
+      "name": "Send a text message3",
+      "webhookId": "873b372d-a153-4613-9792-a9897bb3d23a",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "afazeres",
+          "mode": "list",
+          "cachedResultName": "afazeres"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('id__using_to_match_', ``, 'number') }}",
+            "titulo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('titulo', ``, 'string') }}",
+            "descricao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('descricao', ``, 'string') }}",
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}",
+            "hora": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hora', ``, 'string') }}",
+            "prioridade": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('prioridade', ``, 'string') }}",
+            "categoria": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('categoria', ``, 'string') }}",
+            "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "descricao",
+              "displayName": "descricao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "prioridade",
+              "displayName": "prioridade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "categoria",
+              "displayName": "categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            },
+            {
+              "id": "done_at",
+              "displayName": "done_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        1408,
+        240
+      ],
+      "id": "049518ad-8ec7-44f3-9ba7-da353c643730",
+      "name": "insert_afazer",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "afazeres",
+          "mode": "list",
+          "cachedResultName": "afazeres"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('id__using_to_match_', ``, 'number') }}",
+            "data": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('data', ``, 'string') }}",
+            "hora": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('hora', ``, 'string') }}",
+            "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', ``, 'string') }}",
+            "created_at": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('created_at', ``, 'string') }}",
+            "updated_at": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('updated_at', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descricao",
+              "displayName": "descricao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "hora",
+              "displayName": "hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prioridade",
+              "displayName": "prioridade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "categoria",
+              "displayName": "categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "done_at",
+              "displayName": "done_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        1536,
+        240
+      ],
+      "id": "f34f863f-808f-4667-8c0a-7794b5d27fb1",
+      "name": "Update_afazrer",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "Erro na API, tente novamente mais tarde.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1728,
+        624
+      ],
+      "id": "8e69a7d7-781c-4cbb-9055-dfe3ad9349f1",
+      "name": "Send a text message4",
+      "webhookId": "c5276033-3976-4564-8d62-04ba3f159ebb",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "memoria",
+          "mode": "list",
+          "cachedResultName": "memoria"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "output": "={{ $json.result.text }}",
+            "input": "={{ $('insertMemoria').item.json.input }}",
+            "atividade": "=Erro de API",
+            "chat_id": "={{ $('insertMemoria').item.json.chat_id }}",
+            "id": "={{ $('insertMemoria').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "atividade",
+              "displayName": "atividade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1952,
+        624
+      ],
+      "id": "fd35b8fc-332b-45d1-8016-48c006215a06",
+      "name": "updateMemoria1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "bot_buffer",
+          "mode": "list",
+          "cachedResultName": "bot_buffer"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "chat_id": "={{ $json.message.chat.id }}",
+            "telegram_msg_id": "={{ $json.message.message_id }}",
+            "texto": "={{ $json.message.text }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram_msg_id",
+              "displayName": "telegram_msg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processado",
+              "displayName": "processado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1968,
+        112
+      ],
+      "id": "de88aa30-eca6-43d1-b923-01fc7b4cd09a",
+      "name": "Insert rows in a table3",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1744,
+        112
+      ],
+      "id": "ca7a6ea4-9d88-4b29-88af-a88ecddb8c28",
+      "name": "Wait",
+      "webhookId": "d4c9a26e-b987-4cc0-a04f-52bf144f5914"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH claim AS (\n    UPDATE app.bot_buffer\n    SET processado = TRUE\n    WHERE chat_id = $1\n      AND processado = FALSE\n      AND NOT EXISTS (\n          SELECT 1 FROM app.bot_buffer b2\n          WHERE b2.chat_id = $1\n            AND b2.processado = FALSE\n            AND b2.id > $2\n      )\n    RETURNING id, texto, created_at\n)\nSELECT * FROM claim ORDER BY id;",
+        "options": {
+          "queryReplacement": "=1 → {{ $json.chat_id }}\n2 → {{ $json.id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1520,
+        112
+      ],
+      "id": "dda6a9f9-b4b8-4901-a9f5-2c48bf91ac27",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e53ec1dc-b91b-4dc0-acc8-7911e28bc3cb",
+              "leftValue": "={{ $('Insert rows in a table3').item.json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1296,
+        112
+      ],
+      "id": "f59cb732-e04d-42e4-84e7-0828d7c6d42d",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        336
+      ],
+      "id": "c86dc387-10cf-4f18-8914-2ff1f6111592",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst textos = items.map(i => i.json.texto);\nconst textoAgrupado = textos.join('\\n\\n');\n\nreturn [{ json: { \n    texto_agrupado: textoAgrupado,\n    quantidade: textos.length\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1072,
+        112
+      ],
+      "id": "e8908c33-563e-4e69-8a27-2d333a78dea4",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "height": 352,
+        "width": 4336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2704,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "f37b30b0-4323-4ed3-814f-e46e2195021e",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Two",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Two",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claw_Dium": {
+      "main": [
+        [
+          {
+            "node": "updateMemoria",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claw_Two": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claw_treee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claw_treee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claw_treee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claw_treee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claw_treee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claw_cinco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormularioDrawingRequest": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormularioGastos": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claw_d4": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claw_treee": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claw_cinco": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claw_Two",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claw_d4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claw_treee",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claw_cinco",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table2": {
+      "main": [
+        [
+          {
+            "node": "Claw_Two",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert or update rows in a table2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table in Postgres7": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_cinco",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table in Postgres8": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_cinco",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table in Postgres5": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_cinco",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Links": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "addDesenho": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showDesenho": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showTransacoes": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showJogos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showMemoria": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updateMemoria": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insertMemoria": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updateDesenho": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showDesenho 1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Two",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showTransacoes 1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_d4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insertJogos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_d4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Claw_d4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insertTransacoess 2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_treee",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "showTransacoes1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_treee",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Claw_d4",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "Claw_cinco",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "Claw_treee",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "Claw_Two",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Jogos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DuckDuckGo": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_afazer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert_afazer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update_afazrer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Claw_Dium",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updateMemoria1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message4": {
+      "main": [
+        [
+          {
+            "node": "updateMemoria1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message3": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table3": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "insertMemoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "50c4e740-35b7-4198-bc6d-ee592b9d94af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "6D27m1Rkn76MQ4Uo",
+  "tags": []
+}

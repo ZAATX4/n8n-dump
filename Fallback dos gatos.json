@@ -1,0 +1,1667 @@
+{
+  "name": "Fallback dos gatos",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        1760
+      ],
+      "id": "8b71a2d5-fb5b-4f5c-8ab9-217522132891",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        1568
+      ],
+      "id": "36a9819d-4d2d-48a6-84d4-1e7448dc5fe8",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        1376
+      ],
+      "id": "eb111a2c-45b0-4127-b564-37cc8080e0f2",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        1184
+      ],
+      "id": "9cb1a7be-5d9b-4174-8783-6c2f2d4561b7",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "=Erro com a imagem {{ $('Code in JavaScript1').item.json.id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5888,
+        1088
+      ],
+      "id": "e9c74b9f-5d02-431e-a12c-77a33088c201",
+      "name": "Send a text message1",
+      "webhookId": "6d5eb4c0-13a7-4814-94ed-1265ceb373f6",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        6112,
+        1088
+      ],
+      "id": "2d9c54bf-2b24-4b55-849c-9072b8b44cef",
+      "name": "No Operation, do nothing6"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        736,
+        1072
+      ],
+      "id": "49a5d342-8476-4c72-8b80-ea508c05abf9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "hours"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6560,
+        1072
+      ],
+      "id": "3df45ea1-3813-4220-a13b-753541221d17",
+      "name": "Wait3",
+      "webhookId": "fd25b279-c417-498b-8a40-ee0fce028925"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "950d42b0-085f-454e-8106-1039c380bc07",
+              "leftValue": "={{ $json.agendamento }}",
+              "rightValue": "={{ $today }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "beforeOrEquals"
+              }
+            },
+            {
+              "id": "3b876947-f1f4-4a5a-ae34-a75f5d958af2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Processado",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "508b9143-6150-4a6a-a471-0415c48bd885",
+              "leftValue": "={{ $json.tentativas }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        1024
+      ],
+      "id": "f29b0945-c131-45db-9268-3851cc83f52c",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        512,
+        1024
+      ],
+      "id": "1d6b91c7-54ac-485c-8393-7c3eede3325c",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega todos os itens que chegaram (30 itens)\nconst allItems = $input.all();\n\n// Se não houver itens, interrompe\nif (allItems.length === 0) {\n  return [];\n}\n\n// Cria um Map para armazenar os itens únicos, usando o número da linha como chave\nconst uniqueMap = new Map();\n\nallItems.forEach(item => {\n  const rowNumber = item.json._row_number; // campo adicionado pelo Get Rows\n  if (!uniqueMap.has(rowNumber)) {\n    uniqueMap.set(rowNumber, item);\n  }\n});\n\n// Converte o Map de volta para um array de itens\nconst uniqueItems = Array.from(uniqueMap.values());\n\n// Retorna os itens únicos (agora apenas 3)\nreturn uniqueItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        1024
+      ],
+      "id": "5c792283-9878-4476-b5c8-ce6199f83745",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "status",
+              "value": "Processado"
+            },
+            {
+              "column": "tipo",
+              "value": "gato"
+            }
+          ]
+        },
+        "sort": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -160,
+        1024
+      ],
+      "id": "17b34590-0a61-4d2c-b8ce-e7851ea5fe14",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resize": {}
+      },
+      "type": "n8n-nodes-image-compress.compressImage",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        992
+      ],
+      "id": "3d6e7585-50e7-4964-8afd-fd7b8acfc307",
+      "name": "Compress Image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.server.createSession",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Define Credentials BitchSky').item.json }}",
+        "options": {}
+      },
+      "id": "49a4a88f-2479-4d33-8db7-bea6d5d3ad1d",
+      "name": "Create Bluesky Session",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2304,
+        992
+      ],
+      "typeVersion": 4.2,
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6135981d-82d9-47bb-9eb5-ce9a4220f108",
+              "name": "Caption Text",
+              "type": "string",
+              "value": "={{ $('Select rows from a table').item.json.texto }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "429a0c1c-b462-40bd-aa1e-8be0db42d16f",
+      "name": "Set Caption",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2080,
+        992
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/files/Pendente/{{ $('Select rows from a table').item.json.nome_arquivo }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        992
+      ],
+      "id": "e0fa5dff-56bd-4544-b544-0559fcdb52d4",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/files/Processando/{{ $json.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        992
+      ],
+      "id": "7277e2f9-47e8-4b0e-91c6-2f3d0a2c1b04",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        992
+      ],
+      "id": "e2cc44f0-7b91-459f-a5ff-37b8927705a1",
+      "name": "Execute a SQL query4",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad3e526d-9426-4b21-9178-558841a80db6",
+              "name": "access-token-meta",
+              "value": "=EAAcBRunhoV0BSe1GmwfxPsdcVU7sXoD7O0d8Di5p19aRcR5pZBjbyWAtYo2VsNzzllvg77qFE3LyfukUkqup01wUTneGu9JxmSPxV40vdRkqqrnSOcYnJyZAkRiRUWdxnprJxi71BKTczMJuLGV84o9CkM5r7pV094vEBTgfs1mKVFE8ay9tJguZBVsE3p8iRc6",
+              "type": "string"
+            },
+            {
+              "id": "2a5a8c6c-944c-42aa-bb53-7135ff28705c",
+              "name": "instagram-id",
+              "value": "=17841472227773542",
+              "type": "string"
+            },
+            {
+              "id": "5f6d19ee-7456-42e1-b6f0-fd5091d50e66",
+              "name": "facebook-id",
+              "value": "=1353700191154909",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1856,
+        992
+      ],
+      "id": "34b367b6-5980-4e18-9d3a-348340b02bcc",
+      "name": "Define Credentials meta"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "80abe118-f6d5-4a2f-828f-25209938b03c",
+              "name": "identifier",
+              "value": "yzyzx4.bsky.social",
+              "type": "string"
+            },
+            {
+              "id": "7410a213-5d02-4e52-9e3f-4a5516520358",
+              "name": "password",
+              "value": "p54x-kdhy-pxrg-z2sl",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f508dec-c067-494f-ab19-c9f65079639f",
+      "name": "Define Credentials BitchSky",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1632,
+        992
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.repo.uploadBlob",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Create Bluesky Session').item.json.accessJwt }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "id": "0a6cd8be-d634-4c94-a2dd-304a4147d316",
+      "name": "CreateBlob",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2752,
+        896
+      ],
+      "typeVersion": 4.2,
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $('Read/Write Files from Disk3').item.json.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        2528,
+        896
+      ],
+      "id": "83d388d1-6eb5-4a5f-8fb0-1c0ed7dc578f",
+      "name": "Read/Write Files from Disk5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        736,
+        880
+      ],
+      "id": "94cc1f01-17fb-4feb-8065-7fcf9ccfbdf7",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  alt: \"-\",\n  image: {\n    ...item.json.blob\n  }\n}));"
+      },
+      "id": "0843ddee-6ec2-4d17-b7f0-34be656e114c",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2976,
+        800
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.repo.createRecord",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Create Bluesky Session').item.json.accessJwt }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"repo\": \"{{ $('Create Bluesky Session').item.json.did }}\",\n  \"collection\": \"app.bsky.feed.post\",\n  \"record\": {\n    \"$type\": \"app.bsky.feed.post\",\n    \"text\": \"{{ $('Set Caption').item.json['Caption Text'].trim() }}\",\n    \"createdAt\": \"{{ $now.toISO() }}\",\n    \"embed\": {\n      \"$type\": \"app.bsky.embed.images\",\n      \"images\": {{ JSON.stringify($('Aggregate').item.json.data) }}\n    }\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "6c8e67b1-a8a5-42dc-bc3d-0c4984a16fe1",
+      "name": "Post to Bluesky",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3424,
+        800
+      ],
+      "typeVersion": 4.2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        800
+      ],
+      "id": "685023e7-7939-4896-82e9-588a561feb9d",
+      "name": "Execute a SQL query5",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3200,
+        800
+      ],
+      "id": "2160c30b-cf12-465e-bdb3-9470553b4580",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $('Read/Write Files from Disk3').item.json.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        3872,
+        704
+      ],
+      "id": "2a05b27c-7370-4270-809a-9235ccd27e1d",
+      "name": "Read/Write Files from Disk6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://catbox.moe/user/api.php",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reqtype",
+              "value": "fileupload"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "fileToUpload",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "userhash",
+              "value": "6c9c3bfe6055ac27638bcbf16"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        4096,
+        704
+      ],
+      "id": "16925781-1a26-45f2-82c7-8da7c4b031dc",
+      "name": "CatboxUpload",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3648,
+        704
+      ],
+      "id": "2311f773-b09f-4e98-bb1f-287185c73bbf",
+      "name": "Wait2",
+      "webhookId": "63064250-560a-455b-ac7d-a180e8759709"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Define Credentials meta').item.json['instagram-id'] }}/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $('Define Credentials meta').item.json['access-token-meta'] }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Set Caption').item.json['Caption Text'] }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        4320,
+        608
+      ],
+      "id": "73c67d61-6cb0-42b1-b704-e028084776d0",
+      "name": "CreateSessionInstagram",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        608
+      ],
+      "id": "e46a4552-c663-4172-b7fd-7bc213a26ee3",
+      "name": "Execute a SQL query6",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Define Credentials meta').item.json['instagram-id'] }}/media_publish",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Define Credentials meta').item.json['access-token-meta'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        4544,
+        512
+      ],
+      "id": "97678d68-4fd3-4b33-bc3f-71a312e9c7b3",
+      "name": "PostInstagram",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v26.0/{{ $('Define Credentials meta').item.json['facebook-id'] }}/photos",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $('Define Credentials meta').item.json['access-token-meta'] }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Set Caption').item.json['Caption Text'] }}"
+            },
+            {
+              "name": "url",
+              "value": "={{ $('CatboxUpload').item.json.data }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        4992,
+        416
+      ],
+      "id": "640e5034-125f-4114-a64b-3fa3724e1202",
+      "name": "PostFacebook",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE app.postagens\nSET status = 'Pendente',\n    tentativas = tentativas + 1\nWHERE id = $1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        416
+      ],
+      "id": "76f44556-df6a-4f3d-b770-3e990a99da84",
+      "name": "Execute a SQL query7",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4768,
+        416
+      ],
+      "id": "4ca9b661-935e-40b0-9c68-5f3a6ab29b05",
+      "name": "Wait1",
+      "webhookId": "8f1ce2e0-ec1b-4c6c-bb06-53bf9c751586"
+    },
+    {
+      "parameters": {
+        "operation": "sendMediaGroup",
+        "chatId": "-1004413885811",
+        "media": {
+          "media": [
+            {
+              "media": "={{ $('CatboxUpload').item.json.data }}",
+              "additionalFields": {
+                "caption": "={{ $('Set Caption').item.json['Caption Text'] }}"
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        5440,
+        320
+      ],
+      "id": "7ffd4271-9258-476c-88aa-311fbf8b3e60",
+      "name": "Send a media group message",
+      "webhookId": "f715476e-d689-4f35-b1f4-faf703463137",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5216,
+        320
+      ],
+      "id": "37a65784-27d3-4ec2-bc6b-b284aada18b9",
+      "name": "Wait",
+      "webhookId": "d3ce3f08-7a78-4a32-af3f-ca5ce4e8b6d2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "app",
+          "mode": "list",
+          "cachedResultName": "app"
+        },
+        "table": {
+          "__rl": true,
+          "value": "postagens",
+          "mode": "list",
+          "cachedResultName": "postagens"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "Postado",
+            "id": "={{ $('Select rows from a table').item.json.id }}",
+            "published_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nome_arquivo",
+              "displayName": "nome_arquivo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nome",
+              "displayName": "nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "texto",
+              "displayName": "texto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "agendamento",
+              "displayName": "agendamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "texto_gerado_em",
+              "displayName": "texto_gerado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tentativas",
+              "displayName": "tentativas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "published_at",
+              "displayName": "published_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        5664,
+        224
+      ],
+      "id": "c2724737-c47d-40e0-8869-6c4c43ed9a83",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/files/Postado",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        6112,
+        224
+      ],
+      "id": "79464664-f33a-49d0-8df9-3894738b246e",
+      "name": "Read/Write Files from Disk4"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "Fluxo de postagens completo sem erros",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        6336,
+        224
+      ],
+      "id": "4f68711e-0e9a-4fee-9dfe-510ade91369c",
+      "name": "Send a text message",
+      "webhookId": "4a8b70e8-84dc-4f37-a173-551c78db2c67",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://catbox.moe/user/api.php",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reqtype",
+              "value": "deletefiles"
+            },
+            {
+              "name": "userhash",
+              "value": "6c9c3bfe6055ac27638bcbf16"
+            },
+            {
+              "name": "files",
+              "value": "={{ $json.url.split('/').pop() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        5888,
+        224
+      ],
+      "id": "3111602a-11e1-47f5-9b39-449b631a0db8",
+      "name": "Catbox Delete",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        1024
+      ],
+      "id": "50a447b4-a090-438d-9e47-2d51b1bf26c4",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compress Image": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreateSessionInstagram": {
+      "main": [
+        [
+          {
+            "node": "PostInstagram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostInstagram": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a media group message": {
+      "main": [
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostFacebook": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Caption": {
+      "main": [
+        [
+          {
+            "node": "Create Bluesky Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Bluesky Session": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Bluesky": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreateBlob": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Catbox Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Compress Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk3": {
+      "main": [
+        [
+          {
+            "node": "Define Credentials BitchSky",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk4": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk5": {
+      "main": [
+        [
+          {
+            "node": "CreateBlob",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk6": {
+      "main": [
+        [
+          {
+            "node": "CatboxUpload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CatboxUpload": {
+      "main": [
+        [
+          {
+            "node": "CreateSessionInstagram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catbox Delete": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query4": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query5": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query6": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query7": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Credentials meta": {
+      "main": [
+        [
+          {
+            "node": "Set Caption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Credentials BitchSky": {
+      "main": [
+        [
+          {
+            "node": "Define Credentials meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Post to Bluesky",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a media group message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "PostFacebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d472fb61-4d28-4b51-8576-aec393ddd40c",
+  "meta": {
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "iA6s6SF0f8V7Uz8O",
+  "tags": []
+}

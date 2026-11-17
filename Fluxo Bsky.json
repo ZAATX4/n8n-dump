@@ -1,0 +1,274 @@
+{
+  "name": "Fluxo Bsky",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "7b98d9c3-3121-4757-94fb-84b37ffbbd6b",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2240,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.server.createSession",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $('Define Credentials BitchSky').item.json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2464,
+        -224
+      ],
+      "id": "99754bda-c462-411f-9d3e-b9ad9b8584df",
+      "name": "Create Bluesky Session"
+    },
+    {
+      "parameters": {
+        "url": "https://files.catbox.moe/abc123.jpg",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2688,
+        -224
+      ],
+      "id": "d4158993-3325-477b-9c90-5d2990171db7",
+      "name": "Download Catbox"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.repo.uploadBlob",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Create Bluesky Session').item.json.accessJwt }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2912,
+        -224
+      ],
+      "id": "b9b4fd47-2a18-4ce9-a72b-c88d6be7fb12",
+      "name": "CreateBlob"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({\n  alt: \"-\",\n  image: {\n    ...item.json.blob\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3136,
+        -224
+      ],
+      "id": "24fe1e01-9a7e-4a8b-85f4-f166ad0fd21c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3360,
+        -224
+      ],
+      "id": "edea796e-5582-4800-9fa5-3e814a686fa2",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://bsky.social/xrpc/com.atproto.repo.createRecord",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Create Bluesky Session').item.json.accessJwt }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"repo\": \"{{ $('Create Bluesky Session').item.json.did }}\",\n  \"collection\": \"app.bsky.feed.post\",\n  \"record\": {\n    \"$type\": \"app.bsky.feed.post\",\n    \"text\": \"{{ $('Set Caption').item.json['Caption Text'].trim() }}\",\n    \"createdAt\": \"{{ $now.toISO() }}\",\n    \"embed\": {\n      \"$type\": \"app.bsky.embed.images\",\n      \"images\": {{ JSON.stringify($('Aggregate').item.json.data) }}\n    }\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3584,
+        -224
+      ],
+      "id": "475364c2-5135-47fe-aa47-b0724408aacd",
+      "name": "PostToBluesky"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4032,
+        -224
+      ],
+      "id": "b703d5fd-dc72-4348-b842-20413e1ec24c",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "Bluesky Postado",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3808,
+        -224
+      ],
+      "id": "0b3b98e4-dab3-4a6e-8bd6-db081f792036",
+      "name": "Send a text message",
+      "webhookId": "2b83f55b-c7a5-4b3d-9e0c-3cffbab228b4",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Create Bluesky Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Bluesky Session": {
+      "main": [
+        [
+          {
+            "node": "Download Catbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Catbox": {
+      "main": [
+        [
+          {
+            "node": "CreateBlob",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreateBlob": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "PostToBluesky",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostToBluesky": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "86200087-88e9-41a6-9bc7-a82a46266a1a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "vZ6xX1tF51GFknQW",
+  "tags": []
+}

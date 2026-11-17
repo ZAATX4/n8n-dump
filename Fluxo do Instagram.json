@@ -1,0 +1,183 @@
+{
+  "name": "Fluxo do Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "b908b5ad-1e4a-4830-8743-f38ccc0f2d13",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        3488,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Define Credentials meta').item.json['instagram-id'] }}/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "facebookGraphApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_toke"
+            },
+            {
+              "name": "caption"
+            },
+            {
+              "name": "image_url"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3712,
+        -560
+      ],
+      "id": "6f953a9d-91f8-49b0-8c15-c169229c7f57",
+      "name": "Intagram Session",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Define Credentials meta').item.json['instagram-id'] }}/media_publish",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "creation_id"
+            },
+            {
+              "name": "access_token"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3936,
+        -560
+      ],
+      "id": "d402deb7-c76a-433b-9a0e-5b1e09021c1e",
+      "name": "Instagram Post"
+    },
+    {
+      "parameters": {
+        "chatId": "8828501727",
+        "text": "Instagram Postado",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4160,
+        -560
+      ],
+      "id": "e5ff83dd-25a9-4bed-af45-5d07d1bbda72",
+      "name": "Send a text message",
+      "webhookId": "b3f15fe1-9f88-4d7d-a7f0-40b130de7da9",
+      "credentials": {
+        "telegramApi": {
+          "id": "place holder",
+          "name": "place holder"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4384,
+        -560
+      ],
+      "id": "429a8792-aafa-42b1-8b28-d06d8bce5e4c",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Intagram Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intagram Session": {
+      "main": [
+        [
+          {
+            "node": "Instagram Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Post": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5a491101-f353-4d1d-be53-423f8887baeb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc0253d14437cbac55568113a7199539bc0622ae9fccb9ec3658b5ff7f8a4086"
+  },
+  "nodeGroups": [],
+  "id": "MZK9UZePWjViAbhY",
+  "tags": []
+}
